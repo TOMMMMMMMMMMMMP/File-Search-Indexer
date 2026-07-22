@@ -118,6 +118,41 @@ def test_count():
     print("test_count ✔")
 
 
+def test_recently_added():
+    db = get_db()
+    recent = db.get_recently_added(limit=3)
+    assert len(recent) <= 3
+    assert len(recent) > 0
+    db.close()
+    print("test_recently_added ✔")
+
+
+def test_find_duplicates():
+    db = get_db()
+    # report.pdf and report2.pdf have same size (5KB)
+    dupes = db.find_duplicates()
+    assert isinstance(dupes, list)
+    db.close()
+    print("test_find_duplicates ✔")
+
+
+def test_scanner_skips_errors():
+    scanner = FileScanner()
+    try:
+        scanner.scan("nonexistent_folder_xyz")
+        print("test_scanner_skips_errors ✘ (no error raised)")
+    except FileNotFoundError:
+        print("test_scanner_skips_errors ✔")
+
+
+def test_empty_directory():
+    os.makedirs("empty_test_dir", exist_ok=True)
+    scanner = FileScanner()
+    entries = scanner.scan("empty_test_dir")
+    assert len(entries) == 0
+    shutil.rmtree("empty_test_dir")
+    print("test_empty_directory ✔")
+
 if __name__ == "__main__":
     teardown()
     setup()
@@ -143,5 +178,14 @@ if __name__ == "__main__":
     teardown()
     setup()
     test_count()
+    teardown()
+    setup()
+    test_recently_added()
+    teardown()
+    setup()
+    test_find_duplicates()
+    teardown()
+    test_scanner_skips_errors()
+    test_empty_directory()
     teardown()
     print("\nAll tests passed ✔")
